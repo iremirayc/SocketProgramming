@@ -1,10 +1,10 @@
 import socket
 
-HEADER = 64
-PORT = 5050
+HEADER = 1024
+PORT = 9000
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
-SERVER = socket.gethostbyname(socket.gethostname())
+SERVER = "localhost"
 ADDR = (SERVER, PORT)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -19,10 +19,8 @@ def send(msg):
     client.send(message)
     print(client.recv(2048).decode(FORMAT))
 
-send("Hello World!")
+send("mrb")
 input()
-send("Hello Everyone!")
-input()
-send("Hello Tim!")
+send("mrb2")
 
 send(DISCONNECT_MESSAGE)

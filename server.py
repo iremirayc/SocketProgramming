@@ -1,14 +1,14 @@
-import socket
+from socket import *
 import threading
 
-HEADER = 64
-PORT = 5050
-SERVER = socket.gethostbyname(socket.gethostname())
+HEADER = 1024
+PORT = 9000
+SERVER = "localhost"
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
 DISCONNECT_MESSAGE = "!DISCONNECT"
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server = socket(AF_INET, SOCK_STREAM)
 server.bind(ADDR)
 
 
@@ -17,21 +17,23 @@ def handle_client(conn, addr):
 
     connected = True
     while connected:
-        msg_length = conn.recv(HEADER).decode(FORMAT)
-        if msg_length:
-            msg_length = int(msg_length)
-            msg = conn.recv(msg_length).decode(FORMAT)
-            if msg == DISCONNECT_MESSAGE:
-                connected = False
+        (clientsocket, address) = server.accept()
 
-            print(f"[{addr}] {msg}")
-            conn.send("Msg received".encode(FORMAT))
+        rd = clientsocket.recv(5000).decode()
+        pieces = rd.split("\n")
+        if (len(pieces) > 0): print(pieces[0])
 
+        data = "HTTP/1.1 200 OK\r\n"
+        data += "Content-Type: text/html; charset=utf-8\r\n"
+        data += "\r\n"
+        data += "<html><body>Hello World</body></html>\r\n\r\n"
+        clientsocket.sendall(data.encode())
+        clientsocket.shutdown(SHUT_WR)
     conn.close()
 
 
 def start():
-    server.listen()
+    server.listen(100)
     print(f"[LISTENING] Server is listening on {SERVER}")
     while True:
         conn, addr = server.accept()
@@ -41,4 +43,5 @@ def start():
 
 
 print("[STARTING] server is starting...")
+print('Access http://localhost:9000')
 start()
