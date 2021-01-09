@@ -2,7 +2,7 @@ from socket import *
 import threading
 
 HEADER = 1024
-PORT = 9000
+PORT = 8080
 SERVER = "localhost"
 ADDR = (SERVER, PORT)
 FORMAT = 'utf-8'
