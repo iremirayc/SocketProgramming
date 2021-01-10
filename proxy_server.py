@@ -21,7 +21,7 @@ def start():
             http_server_socket = socket(AF_INET, SOCK_STREAM)
             http_server_socket.connect(address_http)
             http_server_socket.sendall(request.encode())
-            http_response = http_server_socket.recv(1024).decode()
+            http_response = http_server_socket.recv(100000).decode()
             print(http_response.encode())
             connection.sendall((formatResponseDoc(http_response)).encode())
 
@@ -32,15 +32,41 @@ def start():
         http_server_socket.close()
 
 
-
 def formatResponseDoc(response):
-    data = "HTTP/1.1 200 OK\r\n\n "
-    data += "Content-Type: text/html; charset=utf-8\r\n\n"
-    data += "\r\n\n"
-    data += "<html><body>"
-    data += response
-    data += "</body></html>\r\n\r\n"
+    title = ""
+    if response[0:5] == "ERROR":
+        title = response[0:16]
+        response = response[19:]
+    else:
+        title = response[0:getTitle(response)]
+        response = response[getTitle(response):]
+        response = formatResponse(response)
+    data = "HTTP/1.1 200 OK\r\n Content-Type: text/html; charset=utf-8\r\n\n<html><head><title></title><h2>" + title + "</h2>\r\n<body>" + response + "</body></head></html>\r\r\n"
     return data
+
+
+def formatResponse(response):
+    start = 0
+    index = 0
+    newResponse = ""
+    for ch in response:
+        if index % 100 == 0:
+            newResponse += response[start:index] + "\n"
+            start = index
+        index += 1
+    newResponse += response[start:]
+    return newResponse
+
+
+def getTitle(response):
+    end = 0
+    index = 0
+    for ch in response:
+        if (ch == "."):
+            end = index + 1
+            break
+        index += 1
+    return end
 
 
 print("[STARTING] proxy server is starting...")

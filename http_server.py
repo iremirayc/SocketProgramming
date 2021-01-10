@@ -18,7 +18,7 @@ def start():
         connection, address = http_server.accept()
         request = connection.recv(1024).decode()
         response = getResponseDoc(getRequest(request))
-        connection.sendall((formatResponseDoc(response)).encode())
+        connection.sendall((response).encode())
 
 
 def getRequest(request):
@@ -36,6 +36,9 @@ def getRequest(request):
             break
         index += 1
     responseDocLength = request[start:end]
+    isGETRequest = request[0:3]
+    if (isGETRequest != "GET"):
+        responseDocLength = "-1"
     return responseDocLength
 
 
@@ -43,24 +46,18 @@ def getResponseDoc(responseDocLength):
     size = 0
     responseDoc = ""
     if responseDocLength.isdecimal() == False:
-        responseDoc = "404 NOT FOUND BAD REQUEST"
-        return responseDoc
-    if 100 > int(responseDocLength) > 20000:
-        responseDoc = "ERROR"
-        return responseDoc
-    while size < int(responseDocLength):
-        responseDoc += "a"
-        size += 1
+        responseDoc = "ERROR CODE : 400 - BAD REQUEST"
+    elif int(responseDocLength == -1):
+        responseDoc = "ERROR CODE : 501 - NOT IMPLEMENTED"
+    elif int(responseDocLength) < 100 or int(responseDocLength) > 20000:
+        responseDoc = "ERROR CODE : 400 - BAD REQUEST"
+    else:
+        responseDoc = "I am " + responseDocLength + " bytes long."
+        while size < int(responseDocLength):
+            responseDoc += "a"
+            size += 1
     return responseDoc
 
-def formatResponseDoc(response):
-    data = "HTTP/1.1 200 OK\r\n "
-    data += "Content-Type: text/html; charset=utf-8\r\n"
-    data += "\r\n"
-    data += "<html><body>"
-    data += response
-    data += "</body></html>\r\n\r\n"
-    return data
 
 print("[STARTING] http server is starting...")
 print('Access http://localhost:8080')
