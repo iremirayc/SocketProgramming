@@ -31,10 +31,13 @@ def multithreading_proxy(conn, addr):
     connected = True
     while connected:
         connection, address = proxy_server.accept()
-        request = connection.recv(1024).decode()
+        request = connection.recv(4096).decode()
         if (checkMethod(request) == "GET"  and checkPort(request) == "8080" and checkHostName(request) == "localhost"):
             print("Method Name --> " ,checkMethod(request))
-            size = checkURISize(request)
+            try:
+                size = checkURISize(request)
+            except:
+                print("Size Invalid")
             print("URI Size --> ", size)
             print(request)
             if(size != -1):
@@ -44,6 +47,7 @@ def multithreading_proxy(conn, addr):
                     http_server_socket.sendall(request.encode())
                     http_response = http_server_socket.recv(100000).decode()
                     if (checkMethod(request) == "GET"):
+                        print("response httpden gelen: ", http_response)
                         print(http_response.encode())
                     connection.sendall((formatResponseDoc(http_response)).encode())
                 except :
@@ -51,7 +55,14 @@ def multithreading_proxy(conn, addr):
                 connection.close()
                 http_server_socket.close()
             else:
+                connection.sendall((formatResponseDoc("ERROR CODE : 401 - REQUEST - URI TOO LONG")).encode())
                 print("ERROR CODE : 401 - REQUEST - URI TOO LONG")
+                connection.close()
+                http_server_socket.close()
+        else:
+            connection.sendall((formatResponseDoc("ERROR CODE : 501 - REQUEST - NOT IMPLEMENTED")).encode())
+            connection.close()
+            http_server_socket.close()
 
 # this method for response documents HTML format
 def formatResponseDoc(response):
@@ -80,7 +91,7 @@ def formatResponse(response):
     index = 0
     newResponse = ""
     for ch in response:
-        if index % 212 == 0:
+        if index % 118 == 0:
             newResponse += response[start:index] + "\n"
             start = index
         index += 1
@@ -100,7 +111,7 @@ def getTitle(response):
 
 # this method controlled is request has GET method
 def checkMethod(request):
-    # GET request konrolü
+    # GET request kontrolu
     if request[0:3] == "GET" :
         isGETRequest = "GET"
     else :
